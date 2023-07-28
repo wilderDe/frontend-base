@@ -29,34 +29,29 @@ import { useRouter } from 'next/router'
 import { useAlerts, useSession } from '../../common/hooks'
 import { imprimir } from '../../common/utils/imprimir'
 
-import { FiltroParametros } from '../../modules/admin/parametros/ui/FiltroParametros'
-
 import { BotonBuscar } from '../../common/components/ui/botones/BotonBuscar'
 import CustomMensajeEstado from '../../common/components/ui/estados/CustomMensajeEstado'
 import { CriterioOrdenType } from '../../common/types/ordenTypes'
 import { ordenFiltrado } from '../../common/utils/orden'
 import { BotonOrdenar } from '../../common/components/ui/botones/BotonOrdenar'
 import { IconoBoton } from '../../common/components/ui/botones/IconoBoton'
-import { VistaModalProducto } from '../../modules/admin/productos/ui'
+import { FiltroProductos, VistaModalProducto } from '../../modules/admin/productos/ui'
 import { ProductoCRUDType } from '../../modules/admin/productos/types/productosCRUDTypes'
 
 const Parametros: NextPage = () => {
-    const [parametrosData, setParametrosData] = useState<ProductoCRUDType[]>([])
+    const [productosData, setProductosData] = useState<ProductoCRUDType[]>([])
     const [loading, setLoading] = useState<boolean>(true)
 
     // Hook para mostrar alertas
     const { Alerta } = useAlerts()
-    const [errorParametrosData, setErrorParametrosData] = useState<any>()
+    const [errorProductosData, setErrorProductosData] = useState<any>()
 
-    const [modalParametro, setModalParametro] = useState(false)
+    const [modalProducto, setModalProducto] = useState(false)
 
     /// Indicador para mostrar una vista de alerta de cambio de estado
-    const [mostrarAlertaEstadoParametro, setMostrarAlertaEstadoParametro] =
-        useState(false)
+    const [mostrarAlertaEstadoProducto, setMostrarAlertaEstadoProducto] = useState(false)
 
-    const [productoEdicion, setProductoEdicion] = useState<
-        ProductoCRUDType | undefined | null
-    >()
+    const [productoEdicion, setProductoEdicion] = useState<ProductoCRUDType | undefined | null>()
 
     // Variables de páginado
     const [limite, setLimite] = useState<number>(10)
@@ -66,8 +61,8 @@ const Parametros: NextPage = () => {
     const { sesionPeticion } = useSession()
     const { estaAutenticado, permisoUsuario } = useAuth()
 
-    const [filtroParametro, setFiltroParametro] = useState<string>('')
-    const [mostrarFiltroParametros, setMostrarFiltroParametros] = useState(false)
+    const [filtroProducto, setFiltroProducto] = useState<string>('')
+    const [mostrarFiltroProductos, setMostrarFiltroProductos] = useState(false)
     // Permisos para acciones
     const [permisos, setPermisos] = useState<CasbinTypes>({
         read: false,
@@ -81,34 +76,34 @@ const Parametros: NextPage = () => {
 
     /// Método que muestra alerta de cambio de estado
 
-    const editarEstadoParametroModal = async (parametro: ProductoCRUDType) => {
-        setProductoEdicion(parametro) // para mostrar datos de modal en la alerta
-        setMostrarAlertaEstadoParametro(true) // para mostrar alerta de parametro
+    const editarEstadoProductoModal = async (producto: ProductoCRUDType) => {
+        setProductoEdicion(producto) // para mostrar datos de modal en la alerta
+        setMostrarAlertaEstadoProducto(true) // para mostrar alerta de parametro
     }
 
-    const cancelarAlertaEstadoParametro = async () => {
-        setMostrarAlertaEstadoParametro(false)
+    const cancelarAlertaEstadoProducto = async () => {
+        setMostrarAlertaEstadoProducto(false)
         await delay(500) // para no mostrar undefined mientras el modal se cierra
         setProductoEdicion(null)
     }
 
     /// Método que oculta la alerta de cambio de estado y procede
-    const aceptarAlertaEstadoParametro = async () => {
-        setMostrarAlertaEstadoParametro(false)
+    const aceptarAlertaEstadoProducto = async () => {
+        setMostrarAlertaEstadoProducto(false)
         if (productoEdicion) {
-            await cambiarEstadoParametroPeticion(productoEdicion)
+            await cambiarEstadoProductoPeticion(productoEdicion)
         }
         setProductoEdicion(null)
     }
 
     /// Petición que cambia el estado de un parámetro
-    const cambiarEstadoParametroPeticion = async (
-        parametro: ProductoCRUDType
+    const cambiarEstadoProductoPeticion = async (
+        producto: ProductoCRUDType
     ) => {
         try {
             setLoading(true)
             const respuesta = await sesionPeticion({
-                url: `${Constantes.baseUrl}/productos/${parametro.id}/${parametro.estado == 'ACTIVO' ? 'inactivacion' : 'activacion'
+                url: `${Constantes.baseUrl}/productos/${producto.id}/${producto.estado == 'ACTIVO' ? 'inactivacion' : 'activacion'
                     }`,
                 tipo: 'patch',
             })
@@ -117,9 +112,9 @@ const Parametros: NextPage = () => {
                 mensaje: InterpreteMensajes(respuesta),
                 variant: 'success',
             })
-            await obtenerParametrosPeticion()
+            await obtenerProductosPeticion()
         } catch (e) {
-            imprimir(`Error estado parametro`, e)
+            imprimir(`Error estado producto`, e)
             Alerta({ mensaje: `${InterpreteMensajes(e)}`, variant: 'error' })
         } finally {
             setLoading(false)
@@ -141,70 +136,70 @@ const Parametros: NextPage = () => {
         { campo: 'acciones', nombre: 'Acciones' },
     ])
 
-    const contenidoTabla: Array<Array<ReactNode>> = parametrosData.map(
-        (parametroData, indexParametro) => [
+    const contenidoTabla: Array<Array<ReactNode>> = productosData.map(
+        (productoData, indexProducto) => [
             <Typography
-                key={`${parametroData.id}-${indexParametro}-id`}
+                key={`${productoData.id}-${indexProducto}-id`}
                 variant={'body2'}
-            >{`${parametroData.id}`}</Typography>,
+            >{`${productoData.id}`}</Typography>,
             <Typography
-                key={`${parametroData.id}-${indexParametro}-nombre`}
+                key={`${productoData.id}-${indexProducto}-nombre`}
                 variant={'body2'}
             >
-                {`${parametroData.nombre}`}
+                {`${productoData.nombre}`}
             </Typography>,
             <Typography
-                key={`${parametroData.id}-${indexParametro}-cantidad`}
+                key={`${productoData.id}-${indexProducto}-cantidad`}
                 variant={'body2'}
-            >{`${parametroData.cantidad}`}</Typography>,
+            >{`${productoData.cantidad}`}</Typography>,
             <Typography
-                key={`${parametroData.id}-${indexParametro}-precio`}
+                key={`${productoData.id}-${indexProducto}-precio`}
                 variant={'body2'}
-            >{`${parametroData.precio}`}</Typography>,
+            >{`${productoData.precio}`}</Typography>,
 
             <CustomMensajeEstado
-                key={`${parametroData.id}-${indexParametro}-estado`}
-                titulo={parametroData.estado}
-                descripcion={parametroData.estado}
+                key={`${productoData.id}-${indexProducto}-estado`}
+                titulo={productoData.estado}
+                descripcion={productoData.estado}
                 color={
-                    parametroData.estado == 'ACTIVO'
+                    productoData.estado == 'ACTIVO'
                         ? 'success'
-                        : parametroData.estado == 'INACTIVO'
+                        : productoData.estado == 'INACTIVO'
                             ? 'error'
                             : 'info'
                 }
             />,
 
-            <Grid key={`${parametroData.id}-${indexParametro}-acciones`}>
+            <Grid key={`${productoData.id}-${indexProducto}-acciones`}>
                 {permisos.update && (
                     <IconoTooltip
-                        id={`cambiarEstadoParametro-${parametroData.id}`}
-                        titulo={parametroData.estado == 'ACTIVO' ? 'Inactivar' : 'Activar'}
-                        color={parametroData.estado == 'ACTIVO' ? 'success' : 'error'}
+                        id={`cambiarEstadoProducto-${productoData.id}`}
+                        titulo={productoData.estado == 'ACTIVO' ? 'Inactivar' : 'Activar'}
+                        color={productoData.estado == 'ACTIVO' ? 'success' : 'error'}
                         accion={async () => {
-                            await editarEstadoParametroModal(parametroData)
+                            await editarEstadoProductoModal(productoData)
                         }}
-                        desactivado={parametroData.estado == 'PENDIENTE'}
+                        desactivado={productoData.estado == 'PENDIENTE'}
                         icono={
-                            parametroData.estado == 'ACTIVO' ? 'toggle_on' : 'toggle_off'
+                            productoData.estado == 'ACTIVO' ? 'toggle_on' : 'toggle_off'
                         }
                         name={
-                            parametroData.estado == 'ACTIVO'
-                                ? 'Inactivar Parámetro'
-                                : 'Activar Parámetro'
+                            productoData.estado == 'ACTIVO'
+                                ? 'Inactivar Producto'
+                                : 'Activar Producto'
                         }
                     />
                 )}
 
                 {permisos.update && (
                     <IconoTooltip
-                        id={`editarParametros-${parametroData.id}`}
-                        name={'Parámetros'}
+                        id={`editarProductos-${productoData.id}`}
+                        name={'Productos'}
                         titulo={'Editar'}
                         color={'primary'}
                         accion={() => {
-                            imprimir(`Editaremos`, parametroData)
-                            editarParametroModal(parametroData)
+                            imprimir(`Editaremos`, productoData)
+                            editarProductoModal(productoData)
                         }}
                         icono={'edit'}
                     />
@@ -215,46 +210,46 @@ const Parametros: NextPage = () => {
 
     const acciones: Array<ReactNode> = [
         <BotonBuscar
-            id={'accionFiltrarParametrosToggle'}
-            key={'accionFiltrarParametrosToggle'}
-            seleccionado={mostrarFiltroParametros}
-            cambiar={setMostrarFiltroParametros}
+            id={'accionFiltrarProductosToggle'}
+            key={'accionFiltrarProductosToggle'}
+            seleccionado={mostrarFiltroProductos}
+            cambiar={setMostrarFiltroProductos}
         />,
         xs && (
             <BotonOrdenar
-                id={'ordenarParametros'}
-                key={`ordenarParametros`}
-                label={'Ordenar parámetros'}
+                id={'ordenarProductos'}
+                key={`ordenarProductos`}
+                label={'Ordenar productos'}
                 criterios={ordenCriterios}
                 cambioCriterios={setOrdenCriterios}
             />
         ),
         <IconoTooltip
-            id={'actualizarParametro'}
+            id={'actualizarProductos'}
             titulo={'Actualizar'}
-            key={`accionActualizarParametro`}
+            key={`accionActualizarProductos`}
             accion={async () => {
-                await obtenerParametrosPeticion()
+                await obtenerProductosPeticion()
             }}
             icono={'refresh'}
-            name={'Actualizar lista de parámetros'}
+            name={'Actualizar lista de productos'}
         />,
         permisos.create && (
             <IconoBoton
-                id={'agregarParametro'}
-                key={'agregarParametro'}
+                id={'agregarProducto'}
+                key={'agregarProducto'}
                 texto={'Agregar'}
                 variante={xs ? 'icono' : 'boton'}
                 icono={'add_circle_outline'}
-                descripcion={'Agregar parámetro'}
+                descripcion={'Agregar producto'}
                 accion={() => {
-                    agregarParametroModal()
+                    agregarProductoModal()
                 }}
             />
         ),
     ]
 
-    const obtenerParametrosPeticion = async () => {
+    const obtenerProductosPeticion = async () => {
         try {
             setLoading(true)
 
@@ -263,7 +258,7 @@ const Parametros: NextPage = () => {
                 params: {
                     pagina: pagina,
                     limite: limite,
-                    ...(filtroParametro.length == 0 ? {} : { filtro: filtroParametro }),
+                    ...(filtroProducto.length == 0 ? {} : { filtro: filtroProducto }),
                     ...(ordenFiltrado(ordenCriterios).length == 0
                         ? {}
                         : {
@@ -271,29 +266,29 @@ const Parametros: NextPage = () => {
                         }),
                 },
             })
-            setParametrosData(respuesta.datos?.filas)
+            setProductosData(respuesta.datos?.filas)
             setTotal(respuesta.datos?.total)
-            setErrorParametrosData(null)
+            setErrorProductosData(null)
         } catch (e) {
-            imprimir(`Error al obtener parametros`, e)
-            setErrorParametrosData(e)
+            imprimir(`Error al obtener productos`, e)
+            setErrorProductosData(e)
             Alerta({ mensaje: `${InterpreteMensajes(e)}`, variant: 'error' })
         } finally {
             setLoading(false)
         }
     }
 
-    const agregarParametroModal = () => {
+    const agregarProductoModal = () => {
         setProductoEdicion(undefined)
-        setModalParametro(true)
+        setModalProducto(true)
     }
-    const editarParametroModal = (parametro: ProductoCRUDType) => {
-        setProductoEdicion(parametro)
-        setModalParametro(true)
+    const editarProductoModal = (producto: ProductoCRUDType) => {
+        setProductoEdicion(producto)
+        setModalProducto(true)
     }
 
-    const cerrarModalParametro = async () => {
-        setModalParametro(false)
+    const cerrarModalProducto = async () => {
+        setModalProducto(false)
         await delay(500)
         setProductoEdicion(undefined)
     }
@@ -308,7 +303,7 @@ const Parametros: NextPage = () => {
     }, [estaAutenticado])
 
     useEffect(() => {
-        if (estaAutenticado) obtenerParametrosPeticion().finally(() => { })
+        if (estaAutenticado) obtenerProductosPeticion().finally(() => { })
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [
         estaAutenticado,
@@ -316,14 +311,14 @@ const Parametros: NextPage = () => {
         limite,
         // eslint-disable-next-line react-hooks/exhaustive-deps
         JSON.stringify(ordenCriterios),
-        filtroParametro,
+        filtroProducto,
     ])
 
     useEffect(() => {
-        if (!mostrarFiltroParametros) {
-            setFiltroParametro('')
+        if (!mostrarFiltroProductos) {
+            setFiltroProducto('')
         }
-    }, [mostrarFiltroParametros])
+    }, [mostrarFiltroProductos])
 
     const paginacion = (
         <Paginacion
@@ -338,32 +333,32 @@ const Parametros: NextPage = () => {
     return (
         <>
             <AlertDialog
-                isOpen={mostrarAlertaEstadoParametro}
+                isOpen={mostrarAlertaEstadoProducto}
                 titulo={'Alerta'}
                 texto={`¿Está seguro de ${productoEdicion?.estado == 'ACTIVO' ? 'inactivar' : 'activar'
                     } el parámetro: ${titleCase(productoEdicion?.nombre ?? '')} ?`}
             >
-                <Button onClick={cancelarAlertaEstadoParametro}>Cancelar</Button>
-                <Button onClick={aceptarAlertaEstadoParametro}>Aceptar</Button>
+                <Button onClick={cancelarAlertaEstadoProducto}>Cancelar</Button>
+                <Button onClick={aceptarAlertaEstadoProducto}>Aceptar</Button>
             </AlertDialog>
             <CustomDialog
-                isOpen={modalParametro}
-                handleClose={cerrarModalParametro}
-                title={productoEdicion ? 'Editar parámetro' : 'Nuevo parámetro'}
+                isOpen={modalProducto}
+                handleClose={cerrarModalProducto}
+                title={productoEdicion ? 'Editar producto' : 'Nuevo producto'}
             >
                 <VistaModalProducto
                     producto={productoEdicion}
                     accionCorrecta={() => {
-                        cerrarModalParametro().finally()
-                        obtenerParametrosPeticion().finally()
+                        cerrarModalProducto().finally()
+                        obtenerProductosPeticion().finally()
                     }}
-                    accionCancelar={cerrarModalParametro}
+                    accionCancelar={cerrarModalProducto}
                 />
             </CustomDialog>
             <LayoutUser title={`Productos - ${siteName()}`}>
                 <CustomDataTable
                     titulo={'Productos'}
-                    error={!!errorParametrosData}
+                    error={!!errorProductosData}
                     cargando={loading}
                     acciones={acciones}
                     columnas={ordenCriterios}
@@ -371,13 +366,13 @@ const Parametros: NextPage = () => {
                     paginacion={paginacion}
                     contenidoTabla={contenidoTabla}
                     filtros={
-                        mostrarFiltroParametros && (
-                            <FiltroParametros
-                                filtroParametro={filtroParametro}
+                        mostrarFiltroProductos && (
+                            <FiltroProductos
+                                filtroProducto={filtroProducto}
                                 accionCorrecta={(filtros) => {
                                     setPagina(1)
                                     setLimite(10)
-                                    setFiltroParametro(filtros.parametro)
+                                    setFiltroProducto(filtros.producto)
                                 }}
                                 accionCerrar={() => {
                                     imprimir(`👀 cerrar`)

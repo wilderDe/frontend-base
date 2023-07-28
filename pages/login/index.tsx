@@ -66,7 +66,7 @@ const Index: NextPage = () => {
                 component="h1"
                 align={sm || xs ? 'center' : 'left'}
               >
-                Frontend base con Next.js, MUI v5 y TypeScript
+                Frontend base - Modulo Productos - con Next.js, MUI v5 y TypeScript
               </Typography>
             </Box>
           </Box>
