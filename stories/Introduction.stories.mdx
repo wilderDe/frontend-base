@@ -1,0 +1,44 @@
+import { Meta } from '@storybook/blocks'
+import Image from 'next/image'
+import PartesAtomicDesign from './assets/partes-atomic-design.jpg'
+
+<Meta title="Principal/Presentación" />
+
+# Documentación de componentes
+
+Documentación visual interactiva de componentes personalizados basado en Atomic Design con la siguiente estructura:
+
+<p>
+  `Átomos`: son los bloques de construcción más básicos de una UI, como botones,
+  iconos, entradas y tipografía.
+</p>
+
+<p>
+  `Moléculas`: son grupos de átomos que trabajan juntos para realizar una
+  función específica, como un campo de formulario que consta de una etiqueta,
+  una entrada y un mensaje de error.
+</p>
+<p>
+  `Organismos`: son grupos de moléculas que forman una sección distintiva de una
+  UI, como un encabezado, un pie de página o una tarjeta de producto. Los
+  organismos son reutilizables y se pueden usar en todo un proyecto.
+</p>
+<p>
+  `Plantillas`: son las estructuras a nivel de página que definen el diseño y la
+  posición de los organismos dentro de una página.
+</p>
+<p>
+  `Páginas`: son las instancias finales y específicas de una UI que son únicas
+  para un caso de uso o contenido particular. Las páginas se construyen
+  ensamblando plantillas y llenándolas con contenido.
+</p>
+
+<Image
+  alt={'Partes de diseño atómico'}
+  src={PartesAtomicDesign}
+  style={{ objectFit: 'contain' }}
+/>
+
+Para conocer más, recomendamos el siguiente artículo: <a href="https://blog.kamathrohan.com/atomic-design-methodology-for-building-design-systems-f912cf714f53">Atomic Design methodology for building design systems</a>
+
+La mayoría de los componentes están construidos sobre MUI, una librería de componentes de UI preconstruidos <a href="https://mui.com/material-ui/getting-started/installation/">Más información</a>
